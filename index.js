@@ -71,6 +71,7 @@ async function run(){
             res.send(orders)
             
         })
+        
         app.get('/order/:id',async(req,res)=>{
             const  id = req.params.id
             
@@ -188,6 +189,15 @@ async function run(){
             console.log(query)
              const result = await orderCOllection.deleteOne(query);
              res.send(result)
+        })
+
+        app.delete('/product/:id', async(req,res) =>{
+            const id = req.params.id;
+            console.log(id)
+            // const query ={_id: ObjectId(id)}
+            
+            //  const result = await productCOllection.deleteOne(query);
+            //  res.send(result)
         })
        
     }
