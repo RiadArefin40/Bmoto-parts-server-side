@@ -7,7 +7,7 @@ require("dotenv").config();
 var jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const ObjectId = require('mongodb').ObjectId;
-
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 app.use(cors());
 app.use(express.json())
 // db--------YQijA6Vk0oJAEUD9
@@ -22,6 +22,23 @@ async function run(){
         const orderCOllection = client.db("bmoto_parts").collection("orders");
         const userCollection = client.db("bmoto_parts").collection("users");
         const reviewCollection = client.db("bmoto_parts").collection("review");
+
+
+
+        app.post('/create-payment-intern',async (req,res)=>{
+            const order =req.body;
+            const price = order.price;
+            const amount = parseInt(price)*100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount : amount,
+                currency:'usd',
+                payment_method_types:['card']
+
+            })
+          
+            res.send({clientSecret: paymentIntent.client_secret})
+        })
+
         app.get('/products',async (req,res)=>{
             const query = {};
             const cursor = productCOllection.find(query)
