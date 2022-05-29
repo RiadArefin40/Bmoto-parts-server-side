@@ -7,7 +7,8 @@ require("dotenv").config();
 var jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const ObjectId = require('mongodb').ObjectId;
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 app.use(cors());
 app.use(express.json())
 // db--------YQijA6Vk0oJAEUD9
@@ -26,17 +27,19 @@ async function run(){
 
 
         app.post('/create-payment-intern',async (req,res)=>{
-            const order =req.body;
-            const price = order.price;
-            const amount = parseInt(price)*100;
-            const paymentIntent = await stripe.paymentIntents.create({
-                amount : amount,
-                currency:'usd',
-                payment_method_types:['card']
+            const price = 50;
+            const amount = parseInt(price)+100;
+            console.log(amount)
+               const paymentIntent = await stripe.paymentIntents.create({
+                 amount : amount,
+                  currency:'usd',
+                 payment_method_types:['card']
 
-            })
+               })
           
-            res.send({clientSecret: paymentIntent.client_secret})
+              res.send({clientSecret: paymentIntent.client_secret})
+             
+            
         })
 
         app.get('/products',async (req,res)=>{
@@ -143,10 +146,27 @@ async function run(){
         app.post('/order', async(req,res)=>{
             const order = req.body;
             console.log(order)
-        
+
+    
             
             const result =await orderCOllection.insertOne(order);
             res.send({success:true,result});
+        })
+
+        app.patch('/order/:id',async(req,res)=>{
+            const id = req.params.id;
+            const payment = req.body
+            console.log(payment)
+            const query = {_id:ObjectId(id)}
+            const updateDoc = {
+                $set:{
+                    paid: true,
+                    tid: payment.tId
+                }
+
+            }
+            const updateOrder = await orderCOllection.updateOne(query,updateDoc)
+
         })
 
         app.post('/product',async(req,res)=>{
@@ -179,7 +199,7 @@ async function run(){
 
 run().catch(console.dir);
 app.get('/',(req,res)=>{
-    res.send('running my bmoto-parts server')
+    res.send('running my bmoto-parts server' )
 })
 app.listen(port ,()=>{
     console.log('listening to my new port')
